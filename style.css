@@ -40,11 +40,14 @@ path,svg,i{
     opacity: 0;
     padding: 1rem;
     width: 80%;
-    pointer-events: none;
     border-top-right-radius: 1rem;
     border-top-left-radius: 1rem;
     transform: translateY(100px);
     transition: all 0.5s ease-in-out;
+    pointer-events: none;
+    opacity: 1;
+    transform: translateY(0px);
+    pointer-events: all;
 }
 .sliders.active{
     opacity: 1;
@@ -94,7 +97,7 @@ path,svg,i{
 
 .library-panel, .generate-panel, save-panel{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
 }
 
@@ -106,3 +109,13 @@ path,svg,i{
     margin: 2rem 0rem;
     
 }
+
+input[type="range"] {
+    -webkit-appearance: none;
+    margin: 1rem 0rem;
+    width: 100%;
+    position: relative;
+    border-radius: 1rem;
+    cursor: pointer;
+  }
+  
