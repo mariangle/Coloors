@@ -1,12 +1,17 @@
 class ColorPicker{
     constructor(){
-        // ENSURE THIS INSIDE HSLCONTRORLS REFERS TO COLOR PICKER INSTANCE (NOT EVEN TARGET)
+        // BIND METHOD ENSURE THIS INSIDE HSLCONTRORLS REFERS TO COLOR PICKER INSTANCE (NOT EVENT TARGET)
         this.hslControls = this.hslControls.bind(this);
         this.colorDivs = document.querySelectorAll(".color");
         this.currentHexes = document.querySelectorAll(".color h2");
         this.initialColors;
         this.generateBtn = document.querySelector(".generate");
-        this.sliders = document.querySelectorAll('input[type="range"');
+        this.sliders = document.querySelectorAll('input[type="range"]');
+        this.popup = document.querySelector(".copy-container");
+        this.adjustButton = document.querySelectorAll(".adjust");
+        this.lockButton = document.querySelectorAll(".lock");
+        this.closeAdjustments = document.querySelectorAll(".close-adjustment");
+        this.sliderContainers = document.querySelectorAll(".sliders");
     }
 
 
@@ -24,7 +29,13 @@ class ColorPicker{
         this.colorDivs.forEach((div) => {
             const hexText = div.children[0];
             const randomColor = this.generateHex();
-            this.initialColors.push(chroma(randomColor).hex());
+            // ADD TO ARRAY
+            if(div.classList.contains("locked")){
+                this.initialColors.push(hexText.innerText)
+                return;
+            }else{
+                this.initialColors.push(chroma(randomColor).hex());
+            }
     
             // ADD COLOR TO BACKGROUND
             div.style.backgroundColor = randomColor;
@@ -41,7 +52,12 @@ class ColorPicker{
             this.colorizeSliders(color, hue, brightness, saturation);
         });
         // RESET INPUTS TO CORRESPONDING ONES
-        resetInputs();
+        this.resetInputs();
+        // CHECK BUTTON CONTRAST
+        this.adjustButton.forEach((button, index) =>{
+            this.checkTextContrast(this.initialColors[index], button);
+            this.checkTextContrast(this.initialColors[index], this.lockButton[index]);
+        })
     }
     checkTextContrast(color,text){
         // USE CHROMA TO GET LUMINANCE VALUE
@@ -85,6 +101,8 @@ class ColorPicker{
         .set("hsl.h", hue.value);
     
         this.colorDivs[index].style.backgroundColor = color;
+        // COLORIZE SLIDERS / INPUTS
+        this.colorizeSliders(color,hue,brightness,saturation);
     
     }
     updateTextUI(index){
@@ -119,9 +137,43 @@ class ColorPicker{
             }
         })
     }
-}
+    copyToClipboard(hex){
+        const el = document.createElement("textarea");
+        el.value = hex.innerText;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand("copy");
+        document.body.removeChild(el);
+        // POP UP
+        const popupBox = this.popup.children[0]
+        this.popup.classList.add("active");
+        popupBox.classList.add("active");
+    }
+    openAdjustmentPanel(index){
+        this.sliderContainers[index].classList.toggle("active");
+    }
+    closeAdjustmentsPanael(index){
+        this.sliderContainers[index].classList.remove("active");
+    }
+        lockColor(index){
+            this.colorDivs[index].classList.toggle("locked");
+            this.lockButton[index].children[0].classList.toggle("fa-lock-open");
+            this.lockButton[index].children[0].classList.toggle("fa-lock");
+        }
+    }
 
-let colorPicker = new ColorPicker();
+    let colorPicker = new ColorPicker();
+
+
+    colorPicker.lockButton.forEach((button, index) => {
+        button.addEventListener("click", () => {
+            colorPicker.lockColor(index);
+        }); 
+    })
+
+colorPicker.generateBtn.addEventListener('click', () => {
+    colorPicker.randomColors();
+  });
 
 colorPicker.sliders.forEach(slider => {
     slider.addEventListener("input", (e) => {
@@ -136,10 +188,29 @@ colorPicker.colorDivs.forEach((colorDiv, index) => {
     });
 });
 
-colorPicker.randomColors();
+colorPicker.currentHexes.forEach(hex =>{
+    hex.addEventListener("click", () => {
+        colorPicker.copyToClipboard(hex);
+    })
+})
 
-/*colorPicker.colorDivs.forEach(slider,index => {
-    div.addEventListener("change", () => {
-        updateTextUI(index)
-    });
-}); */
+colorPicker.popup.addEventListener("transitionend", () => {
+    const popupBox = colorPicker.popup.children[0];
+    colorPicker.popup.classList.remove("active");
+    popupBox.classList.remove("active");
+})
+
+colorPicker.adjustButton.forEach((button, index) =>{
+    button.addEventListener("click", () =>{
+        colorPicker.openAdjustmentPanel(index);
+    })
+})
+colorPicker.closeAdjustments.forEach((button, index) =>{
+    button.addEventListener("click", () =>{
+        colorPicker.closeAdjustmentsPanael(index);
+    })
+})
+
+
+
+colorPicker.randomColors();
